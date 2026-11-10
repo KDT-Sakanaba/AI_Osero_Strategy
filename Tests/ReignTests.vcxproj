@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{FBA42E9E-6A5D-4FCC-B6D1-005219260F93}</ProjectGuid>
+    <RootNamespace>ReignTests</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <!-- Logic layer only (no DxLib). Folders listed here must never include DxLib.h. -->
+  <ItemGroup>
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Board\Board.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Board\Cell.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Board\MoveValidator.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Player\AIPlayer.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Player\Player.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\AbilityManager.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\FacilityManager.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\GameRules.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\GameSession.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\MapGenerator.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\ResourceManager.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\TurnManager.cpp" />
+    <ClCompile Include="..\REIGN_OF_DISCS\Source\Systems\VictoryManager.cpp" />
+    <ClCompile Include="TestAI.cpp" />
+    <ClCompile Include="TestClassic.cpp" />
+    <ClCompile Include="TestMain.cpp" />
+    <ClCompile Include="TestStrategy.cpp" />
+    <ClInclude Include="TestFramework.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

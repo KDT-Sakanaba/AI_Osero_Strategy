@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{E33F7DA7-6B13-4DB8-B876-864ED1DA2004}</ProjectGuid>
+    <RootNamespace>REIGN_OF_DISCS</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <PropertyGroup>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
+    <!-- DxLib is treated as an external (third-party) header directory: its warnings are not ours -->
+    <ExternalIncludePath>$(SolutionDir)ThirdParty\DxLib;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <!-- C4828: DxLib headers are Shift-JIS while sources compile with /utf-8 -->
+      <DisableSpecificWarnings>4828;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)ThirdParty\DxLib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <!-- The game reads Resources next to the exe, wherever it is started from. -->
+      <Command>xcopy /E /I /Y /Q "$(ProjectDir)Resources" "$(OutDir)Resources" &gt;nul</Command>
+      <Message>Copy Resources to the output folder</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Board\Board.cpp" />
+    <ClCompile Include="Source\Board\Cell.cpp" />
+    <ClCompile Include="Source\Board\MoveValidator.cpp" />
+    <ClCompile Include="Source\Core\AudioManager.cpp" />
+    <ClCompile Include="Source\Core\Game.cpp" />
+    <ClCompile Include="Source\Core\SceneManager.cpp" />
+    <ClCompile Include="Source\Input\InputManager.cpp" />
+    <ClCompile Include="Source\Input\InputScript.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Player\AIPlayer.cpp" />
+    <ClCompile Include="Source\Player\Player.cpp" />
+    <ClCompile Include="Source\Scenes\GameScene.cpp" />
+    <ClCompile Include="Source\Scenes\ResultScene.cpp" />
+    <ClCompile Include="Source\Scenes\SelectScene.cpp" />
+    <ClCompile Include="Source\Scenes\SettingsScene.cpp" />
+    <ClCompile Include="Source\Scenes\TitleScene.cpp" />
+    <ClCompile Include="Source\Systems\AbilityManager.cpp" />
+    <ClCompile Include="Source\Systems\FacilityManager.cpp" />
+    <ClCompile Include="Source\Systems\GameRules.cpp" />
+    <ClCompile Include="Source\Systems\GameSession.cpp" />
+    <ClCompile Include="Source\Systems\MapGenerator.cpp" />
+    <ClCompile Include="Source\Systems\ResourceManager.cpp" />
+    <ClCompile Include="Source\Systems\TurnManager.cpp" />
+    <ClCompile Include="Source\Systems\VictoryManager.cpp" />
+    <ClCompile Include="Source\UI\BoardAnimator.cpp" />
+    <ClCompile Include="Source\UI\BoardRenderer.cpp" />
+    <ClCompile Include="Source\UI\DrawUtil.cpp" />
+    <ClCompile Include="Source\UI\FontSet.cpp" />
+    <ClCompile Include="Source\UI\GameUI.cpp" />
+    <ClCompile Include="Source\UI\HelpOverlay.cpp" />
+    <ClInclude Include="Source\Board\Board.h" />
+    <ClInclude Include="Source\Board\Cell.h" />
+    <ClInclude Include="Source\Board\MoveValidator.h" />
+    <ClInclude Include="Source\Core\AudioManager.h" />
+    <ClInclude Include="Source\Core\Features.h" />
+    <ClInclude Include="Source\Core\Game.h" />
+    <ClInclude Include="Source\Core\SceneManager.h" />
+    <ClInclude Include="Source\Core\Settings.h" />
+    <ClInclude Include="Source\Input\InputManager.h" />
+    <ClInclude Include="Source\Input\InputScript.h" />
+    <ClInclude Include="Source\Player\AIPlayer.h" />
+    <ClInclude Include="Source\Player\Player.h" />
+    <ClInclude Include="Source\Scenes\GameScene.h" />
+    <ClInclude Include="Source\Scenes\ResultScene.h" />
+    <ClInclude Include="Source\Scenes\SelectScene.h" />
+    <ClInclude Include="Source\Scenes\SettingsScene.h" />
+    <ClInclude Include="Source\Scenes\TitleScene.h" />
+    <ClInclude Include="Source\Systems\AbilityManager.h" />
+    <ClInclude Include="Source\Systems\FacilityManager.h" />
+    <ClInclude Include="Source\Systems\GameRules.h" />
+    <ClInclude Include="Source\Systems\GameSession.h" />
+    <ClInclude Include="Source\Systems\GameState.h" />
+    <ClInclude Include="Source\Systems\MapGenerator.h" />
+    <ClInclude Include="Source\Systems\ResourceManager.h" />
+    <ClInclude Include="Source\Systems\TurnManager.h" />
+    <ClInclude Include="Source\Systems\VictoryManager.h" />
+    <ClInclude Include="Source\UI\BoardAnimator.h" />
+    <ClInclude Include="Source\UI\BoardRenderer.h" />
+    <ClInclude Include="Source\UI\DrawUtil.h" />
+    <ClInclude Include="Source\UI\FontSet.h" />
+    <ClInclude Include="Source\UI\GameUI.h" />
+    <ClInclude Include="Source\UI\HelpOverlay.h" />
+    <ClInclude Include="Source\UI\UiConstants.h" />
+    <ClInclude Include="Source\Utils\Constants.h" />
+    <ClInclude Include="Source\Utils\Types.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

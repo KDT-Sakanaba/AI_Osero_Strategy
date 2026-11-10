@@ -1,0 +1,711 @@
+REIGN OF DISCS
+ゲーム企画・基本設計・詳細仕様書
+盤上の覇権 — オセロ × 領土戦略シミュレーション
+| 項目 | 内容 |
+| バージョン | 1.0 |
+| 対象開発環境 | Visual Studio 2022以降 |
+| 言語 / ライブラリ | C++ / DXライブラリ（DxLib） |
+| 対応OS | Windows 10 / Windows 11 |
+| ゲーム形式 | 2D・ターン制ストラテジー |
+| 基本盤面 | 8×8マス |
+| 基本プレイ人数 | 1～2人（ローカル対戦）、AI対戦対応 |
+本書は、Claude Code等のAI開発エージェントに渡し、Visual Studio・C++・DXライブラリでゲームを実装するための開発基準書である。
+[Heading1] 目次
+[ListBullet] 1. 企画概要
+[ListBullet] 2. ゲームルール仕様
+[ListBullet] 3. ストラテジーシステム
+[ListBullet] 4. 特殊能力システム
+[ListBullet] 5. ゲームモード
+[ListBullet] 6. 盤面の特殊マス・地形システム
+[ListBullet] 7. ターン進行システム
+[ListBullet] 8. UI・画面仕様
+[ListBullet] 9. 演出・アニメーション仕様
+[ListBullet] 10. C++・DXライブラリ技術仕様
+[ListBullet] 11. データ設計
+[ListBullet] 12. オセロ処理の詳細仕様
+[ListBullet] 13. AI設計
+[ListBullet] 14. セーブ・ロード仕様
+[ListBullet] 15. エラー処理・安全性
+[ListBullet] 16. 開発段階・実装順序
+[ListBullet] 17. テスト仕様
+[ListBullet] 18. 初期バージョンの完成条件
+[ListBullet] 19. Claude Codeへの開発指示
+[ListBullet] 20. 将来の拡張案
+[ListBullet] 21. 最重要事項
+[ListBullet] 付録A. Claude Codeへの初回指示
+[ListBullet] 付録B. 追加検討事項
+[Heading1] 1. 企画概要
+[Heading2] 1.1 ゲームコンセプト
+本作は、オセロの基本ルールである「石を挟んで反転させる」というシステムを基礎とし、領土の獲得、資源の管理、拠点の建設、特殊能力の使用など、ストラテジーゲームの要素を融合させたターン制ボードゲームである。
+プレイヤーは自勢力の石を盤面に配置し、敵勢力の石を反転させながら領土を拡大する。石の数だけでなく、資源マスの確保、施設の建設、能力の発動、敵の行動予測などが勝敗に影響する。
+[Heading2] 1.2 ゲームの基本的な流れ
+[ListNumber] ゲーム開始時にプレイヤーと敵勢力を決定する。
+[ListNumber] 初期配置された石を確認する。
+[ListNumber] 自分のターンで配置可能なマスを確認する。
+[ListNumber] 石を配置して敵の石を挟み、反転させる。
+[ListNumber] 領土の占領状態に応じて資源を獲得する。
+[ListNumber] 資源を消費して施設建設や特殊能力を使用する。
+[ListNumber] 敵勢力も同様に行動する。
+[ListNumber] 盤面が埋まる、または両勢力が行動不能になった場合に勝敗を判定する。
+[Heading2] 1.3 ゲームデザインの重要方針
+[ListBullet] オセロの基本的なルールをゲームの中心に据える。
+[ListBullet] ストラテジー要素が強くなりすぎて、オセロとして成立しなくなることを防ぐ。
+[ListBullet] 特殊能力は強力だが、使用回数や資源コストによって制限する。
+[ListBullet] 運要素を極力減らし、プレイヤーの判断によって勝敗が左右されるようにする。
+[ListBullet] 初心者でも基本操作を理解できるUIにする。
+[ListBullet] 慣れたプレイヤーには複数の戦略を選べる奥深さを提供する。
+[Heading1] 2. ゲームルール仕様
+[Heading2] 2.1 盤面仕様
+基本盤面は8×8の64マスとする。座標の原点は左上で、左上を(0,0)、右下を(7,7)とする。
+| 項目 | 内容 |
+| X座標 | 0～7 |
+| Y座標 | 0～7 |
+| 石の所有者 | 空白・プレイヤー・敵 |
+| マスの種類 | 通常・資源・拠点・特殊 |
+| 建設施設 | なし・施設ID |
+| 地形効果 | 地形ID |
+| 占領状態 | 未占領・プレイヤー・敵 |
+[Heading2] 2.2 初期配置
+通常のオセロと同じく、中央4マスにプレイヤーの石2個、敵の石2個を互い違いに配置する。初期配置はゲーム開始時に固定する。
+[Heading2] 2.3 石の配置ルール
+プレイヤーは自分のターンに1マスへ石を配置できる。配置可能条件は、対象マスが空白であり、8方向のいずれかで隣接する敵石の連続列の先に自分の石が存在することである。
+[ListBullet] 上
+[ListBullet] 下
+[ListBullet] 左
+[ListBullet] 右
+[ListBullet] 左上
+[ListBullet] 右上
+[ListBullet] 左下
+[ListBullet] 右下
+1回の配置で複数方向の敵石を反転できる。
+[Heading2] 2.4 パスルール
+[ListBullet] 配置可能なマスが存在しない場合、自動的にパスする。
+[ListBullet] パスした場合は手番を相手へ移し、パスしたプレイヤーのターン数を進める。
+[ListBullet] 連続パス数を記録する。
+[ListBullet] 両勢力が連続してパスした場合、ゲームを終了する。
+[Heading2] 2.5 勝敗判定
+以下のいずれかでゲームを終了する。
+[ListBullet] 盤面の64マスがすべて埋まった。
+[ListBullet] 両勢力が連続してパスした。
+[ListBullet] シナリオ等で設定された特殊勝利条件が成立した。
+| 条件 | 結果 |
+| プレイヤーの石が多い | プレイヤー勝利 |
+| 敵の石が多い | 敵の勝利 |
+| 石数が同数 | 引き分け |
+基本モードでは最終的な石の数を比較する。ストラテジーモードでは、将来的に拠点制圧などの特殊勝利条件を設定できる設計とする。
+[Heading1] 3. ストラテジーシステム
+[Heading2] 3.1 資源システム
+ゲーム内ではマナ、鉱石、影響力の3種類の資源を使用する。資源は主に盤面上の資源マスから獲得する。
+| 資源 | 用途 |
+| マナ | 特殊能力の使用 |
+| 鉱石 | 施設の建設 |
+| 影響力 | 強力な戦術・特殊ユニット等の使用 |
+[Heading2] 3.2 資源の初期値
+| 資源 | 初期値 | 最大保有量 |
+| マナ | 3 | 15 |
+| 鉱石 | 2 | 15 |
+| 影響力 | 0 | 10 |
+最大保有量を超えた分の資源は獲得できない。
+[Heading2] 3.3 資源獲得
+資源マスを自勢力の石で占領している場合、ターン開始時に資源を獲得する。同じマスからの資源獲得は1ターンにつき1回までとする。
+| マス | 獲得資源 |
+| マナ鉱脈 | マナ +2 |
+| 鉱石鉱脈 | 鉱石 +2 |
+| 祭壇 | マナ +1、影響力 +1 |
+| 中立拠点 | 影響力 +1 |
+[Heading2] 3.4 施設建設
+施設は自勢力が占領しているマスに建設できる。建設は自分のターンに実行し、基本ルールでは1ターンにつき1施設まで建設可能とする。
+| 施設 | 建設コスト | 効果 |
+| 採掘所 | 鉱石3 | ターン開始時に鉱石+1 |
+| 魔力炉 | 鉱石2、マナ2 | ターン開始時にマナ+1 |
+| 砦 | 鉱石4 | 隣接する自勢力の石に防御効果 |
+| 祭壇 | 鉱石3、影響力1 | ターン開始時に影響力+1 |
+施設は建設したマスが敵に奪われた場合、敵の所有物になる。施設効果も所有者に応じて切り替わる。施設は1マスにつき1つまで建設可能とする。
+[Heading2] 3.5 施設の防御効果
+[ListBullet] 砦に隣接している自勢力の石は防御状態になる。
+[ListBullet] 防御状態の石は通常のオセロの反転対象にならない。
+[ListBullet] 砦1つにつき最大4方向の隣接マスに効果を与える。
+[ListBullet] 砦自身が敵に奪われた場合、防御効果は解除される。
+[ListBullet] 特殊能力「破城」によって防御状態を解除できる。
+[ListBullet] 砦の効果は建設者の石だけに適用する。
+防御石は通常のオセロルールを変更するため、通常オセロモードとストラテジーモードを明確に分離する。防御対象の選定順や複数砦の重複範囲は実装前に確定すること。
+[Heading1] 4. 特殊能力システム
+[Heading2] 4.1 基本仕様
+[ListBullet] 特殊能力は資源を消費して発動する。
+[ListBullet] 能力はプレイヤーごとに管理する。
+[ListBullet] 使用可能な能力は勢力ごとに設定できるようにする。
+[ListBullet] 能力の使用は自分のターンのみ可能とする。
+[ListBullet] 基本仕様では1ターンに1回まで特殊能力を使用できる。
+[Heading2] 4.2 初期実装する特殊能力
+| 能力 | コスト | 効果・制限 |
+| 魔力強化 | マナ3 | 指定した自勢力の石を強化。相手の次のターン終了まで通常の反転対象にならない。 |
+| 強制反転 | マナ5 | 指定した敵石を1つ反転。防御状態の石には使用不可。 |
+| 資源採掘 | なし | 鉱石+2。ゲーム中3回まで。 |
+| 破城 | 影響力3 | 指定した敵施設の効果を2ターン無効化。 |
+| 戦術的配置 | 影響力5 | 特殊配置可能マスに追加の石を配置。通常の配置条件を満たさない場所にも配置可能。ゲーム中1回。 |
+[Heading2] 4.3 能力使用時の処理
+[ListNumber] 能力選択画面を開く。
+[ListNumber] 使用可能な能力を表示する。
+[ListNumber] 必要資源があるか確認する。
+[ListNumber] 対象マスが必要な場合は対象を選択する。
+[ListNumber] 発動条件を検証する。
+[ListNumber] 資源を消費する。
+[ListNumber] 能力の効果を反映する。
+[ListNumber] 盤面とUIを更新する。
+条件を満たさない場合は能力を発動せず、資源も消費しない。
+[Heading1] 5. ゲームモード
+[Heading2] 5.1 通常オセロモード
+[ListBullet] 資源なし
+[ListBullet] 施設なし
+[ListBullet] 特殊能力なし
+[ListBullet] 地形効果なし
+[ListBullet] 8×8盤面
+[ListBullet] 石の数によって勝敗を判定
+ストラテジー要素を取り除いた基本ルールの確認にも使用する。
+[Heading2] 5.2 ストラテジーモード
+[ListBullet] 資源システムあり
+[ListBullet] 施設建設あり
+[ListBullet] 特殊能力あり
+[ListBullet] 特殊マスあり
+[ListBullet] 地形効果あり
+[ListBullet] オセロの基本ルールをベースに対戦
+[Heading2] 5.3 AI対戦モード
+プレイヤー対AIで対戦する。難易度は3段階とする。
+| 難易度 | AIの特徴 |
+| EASY | 合法手からランダムに選択する。 |
+| NORMAL | 角、辺、資源マスの確保を優先する。 |
+| HARD | 複数ターン先を探索し、資源や特殊能力も考慮する。 |
+HARDでは可能な範囲でMinimax法とAlpha-Beta枝刈りを使用する。AIの思考時間には上限を設ける。
+[Heading1] 6. 盤面の特殊マス・地形システム
+[Heading2] 6.1 特殊マス
+| 種類 | 数 | 効果 |
+| マナ鉱脈 | 4 | マナ獲得 |
+| 鉱石鉱脈 | 4 | 鉱石獲得 |
+| 祭壇 | 2 | マナ・影響力獲得 |
+| 中立拠点 | 4 | 影響力獲得 |
+盤面生成時に特殊マスを配置する。盤面上で種類ごとに視覚的に区別できるようにする。通常オセロモードでは特殊マスを表示しない。
+[Heading2] 6.2 地形システム
+| 地形 | 効果 |
+| 平地 | 特殊効果なし |
+| 森林 | 防御系能力の効果が上昇 |
+| 遺跡 | 施設建設コストが減少 |
+| 魔力地帯 | マナ獲得量が増加 |
+初期開発では平地と特殊マスを優先する。地形による複雑な効果は基本システム完成後に追加する。
+[Heading1] 7. ターン進行システム
+[Heading2] 7.1 ターン構成
+[ListNumber] ターン開始処理
+[ListNumber] 資源獲得処理
+[ListNumber] 施設効果処理
+[ListNumber] プレイヤー操作受付
+[ListNumber] 特殊能力使用（任意）
+[ListNumber] 石の配置
+[ListNumber] 石の反転処理
+[ListNumber] 盤面状態更新
+[ListNumber] 勝敗判定
+[ListNumber] ターン終了処理
+[ListNumber] 相手ターンへ移行
+[Heading2] 7.2 行動制限
+| 行動 | 制限 |
+| 石の配置 | 1回 |
+| 特殊能力 | 1回 |
+| 施設建設 | 1回 |
+| 資源採掘 | 能力使用枠を消費する |
+特殊能力や建設を使用した後も石の配置は可能とする。石を配置した時点でターンを終了する。
+[Heading2] 7.3 行動順序
+初期プレイヤーはプレイヤー先行とする。将来的には先攻・後攻の選択を追加できるようにする。
+[Heading1] 8. UI・画面仕様
+[Heading2] 8.1 タイトル画面
+[ListBullet] ゲームタイトル
+[ListBullet] ゲーム開始
+[ListBullet] モード選択
+[ListBullet] 設定
+[ListBullet] 終了
+ゲーム開始を選択するとモード選択画面へ移行する。
+[Heading2] 8.2 モード選択画面
+[ListBullet] 通常オセロ
+[ListBullet] ストラテジー
+[ListBullet] AI対戦
+[ListBullet] ローカル2人対戦
+[Heading2] 8.3 ゲーム画面
+[Heading3] 中央：ゲーム盤面
+[ListBullet] 8×8のマスを表示する。
+[ListBullet] プレイヤーの石は黒、敵の石は白とする。
+[ListBullet] 空白マスは背景色で表現する。
+[ListBullet] 特殊マスは種類ごとに色分けする。
+[ListBullet] 施設は石と区別して表示する。
+[ListBullet] 選択中のマスは枠線で強調する。
+[Heading3] 左側：プレイヤー情報
+[ListBullet] プレイヤー名
+[ListBullet] 石の数
+[ListBullet] マナ
+[ListBullet] 鉱石
+[ListBullet] 影響力
+[ListBullet] 所有拠点数
+[Heading3] 右側：敵情報
+[ListBullet] 敵名
+[ListBullet] 石の数
+[ListBullet] マナ
+[ListBullet] 鉱石
+[ListBullet] 影響力
+[ListBullet] 所有拠点数
+[Heading3] 下部：操作・情報表示
+[ListBullet] 現在のターン
+[ListBullet] 現在の手番
+[ListBullet] 使用可能な特殊能力
+[ListBullet] 建設メニュー
+[ListBullet] パスボタン
+[ListBullet] メッセージログ
+[Heading2] 8.4 マウス操作
+| 操作 | 処理 |
+| 左クリック | マス選択・石配置 |
+| 右クリック | 選択解除・キャンセル |
+| マウスオーバー | マス情報表示 |
+| 能力ボタン | 能力選択 |
+| 建設ボタン | 建設メニュー表示 |
+| ESC | メニュー表示・キャンセル |
+配置不可能なマスをクリックした場合、石を配置しない。配置可能なマスには視覚的な目印を表示する。
+[Heading2] 8.5 メッセージ表示
+[ListBullet] 「プレイヤーのターンです」
+[ListBullet] 「配置可能な場所を選択してください」
+[ListBullet] 「マナが不足しています」
+[ListBullet] 「このマスには建設できません」
+[ListBullet] 「敵の石を3個反転しました」
+[ListBullet] 「プレイヤーが勝利しました」
+メッセージは画面下部に一定時間表示する。
+[Heading1] 9. 演出・アニメーション仕様
+[Heading2] 9.1 石の配置
+[ListBullet] 石を配置した瞬間に簡易的な拡大演出を行う。
+[ListBullet] 配置位置を一時的に強調する。
+[Heading2] 9.2 石の反転
+[ListBullet] 黒から白、白から黒へ反転するアニメーションを行う。
+[ListBullet] 複数対象がある場合、短い間隔で順番に反転させる。
+[ListBullet] アニメーション中は盤面操作を受け付けない。
+[Heading2] 9.3 資源獲得
+[ListBullet] 資源アイコンを表示する。
+[ListBullet] 数値が増加する演出を行う。
+[ListBullet] 獲得した資源の種類を表示する。
+[Heading2] 9.4 勝利・敗北
+| 勝利時 | 敗北時 |
+| 勝利メッセージ | 敗北メッセージ |
+| 最終スコア | 最終スコア |
+| 石の数 | リトライボタン |
+| 資源の残量 | — |
+[Heading1] 10. C++・DXライブラリ技術仕様
+[Heading2] 10.1 開発環境
+| 項目 | 指定 |
+| IDE | Visual Studio 2022以降 |
+| 言語 | C++ |
+| ライブラリ | DXライブラリ（DxLib） |
+| 文字コード | UTF-8を基本とする |
+| 画面解像度 | 1280×720 |
+| 描画方式 | 2D |
+| 入力方式 | マウス・キーボード |
+DXライブラリの初期化、描画、入力、終了処理を使用する。基本的にDXライブラリの標準APIを利用する。
+[Heading2] 10.2 推奨プロジェクト構成
+[CodeBlock] REIGN_OF_DISCS/
+[CodeBlock] ├── REIGN_OF_DISCS.sln
+[CodeBlock] ├── REIGN_OF_DISCS/
+[CodeBlock] │   ├── Source/
+[CodeBlock] │   │   ├── Main.cpp
+[CodeBlock] │   │   ├── Core/
+[CodeBlock] │   │   │   ├── Game.cpp / Game.h
+[CodeBlock] │   │   │   ├── SceneManager.cpp / SceneManager.h
+[CodeBlock] │   │   ├── Scenes/
+[CodeBlock] │   │   │   ├── TitleScene.cpp / TitleScene.h
+[CodeBlock] │   │   │   ├── SelectScene.cpp / SelectScene.h
+[CodeBlock] │   │   │   ├── GameScene.cpp / GameScene.h
+[CodeBlock] │   │   │   ├── ResultScene.cpp / ResultScene.h
+[CodeBlock] │   │   ├── Board/
+[CodeBlock] │   │   │   ├── Board.cpp / Board.h
+[CodeBlock] │   │   │   ├── Cell.cpp / Cell.h
+[CodeBlock] │   │   │   ├── MoveValidator.cpp / MoveValidator.h
+[CodeBlock] │   │   ├── Systems/
+[CodeBlock] │   │   │   ├── TurnManager.cpp / TurnManager.h
+[CodeBlock] │   │   │   ├── ResourceManager.cpp / ResourceManager.h
+[CodeBlock] │   │   │   ├── FacilityManager.cpp / FacilityManager.h
+[CodeBlock] │   │   │   ├── AbilityManager.cpp / AbilityManager.h
+[CodeBlock] │   │   │   ├── VictoryManager.cpp / VictoryManager.h
+[CodeBlock] │   │   ├── Player/
+[CodeBlock] │   │   │   ├── Player.cpp / Player.h
+[CodeBlock] │   │   │   ├── AIPlayer.cpp / AIPlayer.h
+[CodeBlock] │   │   ├── UI/
+[CodeBlock] │   │   │   ├── BoardRenderer.cpp / BoardRenderer.h
+[CodeBlock] │   │   │   ├── GameUI.cpp / GameUI.h
+[CodeBlock] │   │   ├── Input/
+[CodeBlock] │   │   │   ├── InputManager.cpp / InputManager.h
+[CodeBlock] │   │   └── Utils/
+[CodeBlock] │   │       ├── Constants.h
+[CodeBlock] │   │       └── Types.h
+[CodeBlock] │   ├── Resources/
+[CodeBlock] │   │   ├── Images/
+[CodeBlock] │   │   ├── Fonts/
+[CodeBlock] │   │   ├── Sounds/
+[CodeBlock] │   │   └── Data/
+[CodeBlock] │   └── README.md
+[CodeBlock] └── docs/
+[CodeBlock]     ├── GAME_SPECIFICATION.md
+[CodeBlock]     ├── TECHNICAL_SPECIFICATION.md
+[CodeBlock]     └── IMPLEMENTATION_PLAN.md
+[Heading2] 10.3 クラス設計
+| クラス | 主な責務 |
+| Game | ゲーム初期化、メインループ、シーン管理、全体更新、終了処理 |
+| SceneManager | 現在のシーン保持、シーン切り替え、更新、描画 |
+| Board | 8×8盤面、石の配置・反転、石数集計、特殊マス管理 |
+| MoveValidator | 合法手判定、8方向探索、反転対象取得、合法手一覧、パス判定 |
+| TurnManager | 手番、ターン開始・終了、パス、行動回数、連続パス判定 |
+| ResourceManager | 資源保有量、増減、最大保有量、コスト確認・消費 |
+| FacilityManager | 施設建設、建設可能判定、施設効果、所有者、無効化 |
+| AbilityManager | 能力一覧、発動条件、資源消費、効果、使用回数制限 |
+| AIPlayer | 合法手取得、行動評価、最善手選択、難易度管理 |
+| GameUI | 資源・スコア・ボタン・メッセージ表示、操作受付 |
+BoardとMoveValidatorは役割を分ける。合法手判定と実際の石の反転処理を同じ関数に詰め込まないこと。
+[Heading1] 11. データ設計
+[Heading2] 11.1 石の所有者
+[CodeBlock] enum class CellOwner
+[CodeBlock] {
+[CodeBlock]     None,
+[CodeBlock]     Player,
+[CodeBlock]     Enemy
+[CodeBlock] };
+[Heading2] 11.2 マスの種類
+[CodeBlock] enum class CellType
+[CodeBlock] {
+[CodeBlock]     Normal,
+[CodeBlock]     ManaMine,
+[CodeBlock]     OreMine,
+[CodeBlock]     Altar,
+[CodeBlock]     NeutralBase
+[CodeBlock] };
+[Heading2] 11.3 施設の種類
+[CodeBlock] enum class FacilityType
+[CodeBlock] {
+[CodeBlock]     None,
+[CodeBlock]     MiningFacility,
+[CodeBlock]     ManaGenerator,
+[CodeBlock]     Fort,
+[CodeBlock]     Altar
+[CodeBlock] };
+[Heading2] 11.4 マス情報
+[CodeBlock] struct Cell
+[CodeBlock] {
+[CodeBlock]     CellOwner owner;
+[CodeBlock]     CellType type;
+[CodeBlock]     FacilityType facility;
+[CodeBlock]     bool isDefended;
+[CodeBlock]     bool isSelected;
+[CodeBlock] };
+[Heading2] 11.5 資源情報
+[CodeBlock] struct Resources
+[CodeBlock] {
+[CodeBlock]     int mana;
+[CodeBlock]     int ore;
+[CodeBlock]     int influence;
+[CodeBlock] };
+[Heading2] 11.6 プレイヤー情報
+[CodeBlock] struct Player
+[CodeBlock] {
+[CodeBlock]     CellOwner owner;
+[CodeBlock]     Resources resources;
+[CodeBlock]     int turnCount;
+[CodeBlock]     int facilityCount;
+[CodeBlock]     int abilityUsedCount;
+[CodeBlock] };
+[Heading2] 11.7 盤面データ
+[CodeBlock] class Board
+[CodeBlock] {
+[CodeBlock] private:
+[CodeBlock]     static constexpr int SIZE = 8;
+[CodeBlock]     Cell cells[SIZE][SIZE];
+[CodeBlock] public:
+[CodeBlock]     void Initialize();
+[CodeBlock]     Cell& GetCell(int x, int y);
+[CodeBlock]     bool IsInside(int x, int y) const;
+[CodeBlock]     void PlaceStone(int x, int y, CellOwner owner);
+[CodeBlock]     int CountStones(CellOwner owner) const;
+[CodeBlock] };
+実際の実装では境界外アクセスを防止する。外部クラスから盤面配列を直接操作せず、Boardの関数を通じて変更すること。
+[Heading1] 12. オセロ処理の詳細仕様
+[Heading2] 12.1 8方向探索
+[CodeBlock] const int directions[8][2] =
+[CodeBlock] {
+[CodeBlock]     { 0, -1 },
+[CodeBlock]     { 0,  1 },
+[CodeBlock]     {-1,  0 },
+[CodeBlock]     { 1,  0 },
+[CodeBlock]     {-1, -1 },
+[CodeBlock]     { 1, -1 },
+[CodeBlock]     {-1,  1 },
+[CodeBlock]     { 1,  1 }
+[CodeBlock] };
+[Heading2] 12.2 合法手判定
+[ListNumber] 座標が盤面内か確認する。
+[ListNumber] マスが空白か確認する。
+[ListNumber] 8方向を順番に調べる。
+[ListNumber] 隣接するマスが敵石であるか確認する。
+[ListNumber] 敵石が続く限り探索する。
+[ListNumber] 自分の石に到達した場合、その方向を合法方向とする。
+[ListNumber] 1方向でも合法方向が存在すれば配置可能とする。
+[Heading2] 12.3 反転処理
+反転処理は合法手判定と同じ探索結果を使用する。合法手判定時に取得した反転対象を実際に変更する。合法手判定と反転処理で異なる探索結果を使用しないこと。
+[Heading2] 12.4 重要な実装ルール
+[ListBullet] 盤面外に出たら探索を終了する。
+[ListBullet] 空白マスに到達したらその方向は不成立。
+[ListBullet] 自分の石に到達した場合のみ反転対象を確定する。
+[ListBullet] 敵石が1個も挟まれていない方向は不成立。
+[ListBullet] 配置前に盤面を変更しない。
+[ListBullet] 反転対象が0個なら石を配置しない。
+[Heading1] 13. AI設計
+[Heading2] 13.1 EASY
+合法手一覧からランダムに選択する。不正な手を選ばないことを保証する。
+[Heading2] 13.2 NORMAL
+| 評価要素 | 評価 |
+| 角の確保 | +100 |
+| 辺の確保 | +20 |
+| 資源マスの確保 | +30 |
+| 敵に角を取らせる危険性 | -80 |
+| 不必要な石数の増加 | 状況によって減点 |
+| 拠点の確保 | +40 |
+石の枚数だけを評価して手を選ぶのではなく、将来的な盤面の有利さを重視する。
+[Heading2] 13.3 HARD
+Minimax法とAlpha-Beta枝刈りを使用する。
+[ListBullet] 石の枚数
+[ListBullet] 角の所有数
+[ListBullet] 辺の所有数
+[ListBullet] 合法手の数
+[ListBullet] 資源の保有量
+[ListBullet] 施設の所有状況
+[ListBullet] 特殊能力の使用可能状態
+[ListBullet] 拠点の所有状況
+探索深度は設定可能にする。初期値は深度4を目安とし、思考時間の上限は2秒とする。
+[Heading1] 14. セーブ・ロード仕様
+将来の拡張を考慮して、ゲーム状態を保存できる設計にする。
+[ListBullet] 盤面の全情報
+[ListBullet] 石の所有者
+[ListBullet] 特殊マス
+[ListBullet] 施設情報
+[ListBullet] 資源情報
+[ListBullet] 現在のターン
+[ListBullet] 手番
+[ListBullet] 特殊能力の使用回数
+[ListBullet] 難易度
+[ListBullet] ゲームモード
+保存形式はJSONを推奨する。ただし、初期開発ではセーブ・ロード機能を必須にしない。
+[Heading1] 15. エラー処理・安全性
+[ListBullet] 盤面外の座標へのアクセス
+[ListBullet] 配置不可能なマスへの配置
+[ListBullet] 資源不足
+[ListBullet] 建設不可能なマスへの建設
+[ListBullet] 特殊能力の不正使用
+[ListBullet] 連続パス時の終了処理
+[ListBullet] AIの合法手が存在しない場合
+[ListBullet] 画面切り替え時の入力残留
+[ListBullet] DXライブラリのリソース解放漏れ
+不正な操作によってゲームがクラッシュしないこと。
+[Heading1] 16. 開発段階・実装順序
+[Heading2] Phase 1：開発環境構築
+[ListBullet] Visual Studioプロジェクト作成
+[ListBullet] DXライブラリ導入
+[ListBullet] C++設定
+[ListBullet] ウィンドウ表示
+[ListBullet] メインループ作成
+[ListBullet] 基本描画確認
+完了条件：DXライブラリを使用したウィンドウが正常に表示される。
+[Heading2] Phase 2：通常オセロの完成
+[ListBullet] 8×8盤面
+[ListBullet] 初期配置
+[ListBullet] マウス入力
+[ListBullet] 合法手判定
+[ListBullet] 石の反転
+[ListBullet] パス処理
+[ListBullet] 勝敗判定
+完了条件：AIなしのローカル2人対戦で、通常オセロを最初から最後まで遊べる。
+[Heading2] Phase 3：基本UI
+[ListBullet] タイトル画面
+[ListBullet] モード選択
+[ListBullet] ゲーム画面
+[ListBullet] 結果画面
+[ListBullet] メッセージ表示
+[ListBullet] 石数表示
+完了条件：画面遷移とゲーム進行が正常に動作する。
+[Heading2] Phase 4：ストラテジーシステム
+[ListBullet] 特殊マス
+[ListBullet] 資源獲得
+[ListBullet] 資源管理
+[ListBullet] 施設建設
+[ListBullet] 施設効果
+[ListBullet] 特殊能力
+[ListBullet] 防御システム
+完了条件：ストラテジーモードで資源を使った戦略的な対戦ができる。
+[Heading2] Phase 5：AI実装
+[ListBullet] EASY
+[ListBullet] NORMAL
+[ListBullet] HARD
+[ListBullet] 行動評価
+[ListBullet] 探索アルゴリズム
+完了条件：プレイヤーがAIと対戦できる。
+[Heading2] Phase 6：演出・調整
+[ListBullet] 石の反転アニメーション
+[ListBullet] 資源獲得演出
+[ListBullet] ボタン演出
+[ListBullet] 効果音
+[ListBullet] BGM
+[ListBullet] UI調整
+完了条件：基本的なゲーム体験が完成する。
+[Heading2] Phase 7：最終テスト
+[ListBullet] 全モードの動作確認
+[ListBullet] 盤面処理テスト
+[ListBullet] AIテスト
+[ListBullet] 資源管理テスト
+[ListBullet] 特殊能力テスト
+[ListBullet] 長時間プレイテスト
+[ListBullet] ビルド確認
+完了条件：Visual Studioから正常にビルド・起動でき、ゲームを最後までプレイできる。
+[Heading1] 17. テスト仕様
+| ID | テスト内容 | 期待結果 |
+| T001 | 初期盤面生成 | 正しい4石が配置される |
+| T002 | 合法手判定 | 合法手だけが選択可能 |
+| T003 | 不正な配置 | 盤面が変更されない |
+| T004 | 1方向反転 | 正しく反転する |
+| T005 | 複数方向反転 | 全方向が正しく反転する |
+| T006 | パス処理 | 合法手がない場合にパスする |
+| T007 | 両者パス | ゲームが終了する |
+| T008 | 全マス占有 | 勝敗判定される |
+| T009 | 資源獲得 | 正しい資源が加算される |
+| T010 | 資源不足 | 能力や施設を使用できない |
+| T011 | 施設建設 | コスト消費と効果が反映される |
+| T012 | 施設奪取 | 所有者が正しく切り替わる |
+| T013 | 特殊能力 | 指定した効果が発生する |
+| T014 | AI対戦 | AIが合法手を選択する |
+| T015 | シーン遷移 | 正常に画面が切り替わる |
+[Heading1] 18. 初期バージョンの完成条件
+[ListBullet] 通常オセロが遊べる。
+[ListBullet] ストラテジーモードが遊べる。
+[ListBullet] ローカル2人対戦ができる。
+[ListBullet] AI対戦ができる。
+[ListBullet] 資源管理が機能する。
+[ListBullet] 施設建設が機能する。
+[ListBullet] 特殊能力が機能する。
+[ListBullet] 勝敗判定が正しい。
+[ListBullet] タイトルから結果画面まで正常に遷移する。
+[ListBullet] Visual Studioでビルドできる。
+[ListBullet] DXライブラリ以外の不要な外部依存を増やさない。
+[Heading1] 19. Claude Codeへの開発指示
+[Heading2] 19.1 基本方針
+この仕様書を正式な開発基準として扱う。仕様書に記載されている内容を独断で削除・変更しないこと。仕様に矛盾や実装上の問題がある場合は、実装前に問題点と改善案を提示すること。
+[Heading2] 19.2 実装方法
+一度に大量のソースコードを生成しないこと。Phase単位で実装する。各Phaseでは以下を必ず実施する。
+[ListNumber] 実装対象の確認
+[ListNumber] 関連クラスの設計
+[ListNumber] 必要なファイルの作成
+[ListNumber] コードの実装
+[ListNumber] ビルド
+[ListNumber] エラー修正
+[ListNumber] 動作確認
+[ListNumber] 完了条件との照合
+[ListNumber] 進捗の記録
+現在のPhaseが完了していない状態で、次のPhaseへ勝手に進まないこと。
+[Heading2] 19.3 コード品質
+[ListBullet] クラスごとの責務を明確にする。
+[ListBullet] UIとゲームロジックを分離する。
+[ListBullet] 盤面処理と描画処理を分離する。
+[ListBullet] マジックナンバーを極力使用しない。
+[ListBullet] 定数はConstants.hなどにまとめる。
+[ListBullet] 関数は単一の役割を基本とする。
+[ListBullet] 不要なグローバル変数を使用しない。
+[ListBullet] 同じ処理を複数箇所に重複して実装しない。
+[ListBullet] 将来の機能追加を考慮した設計にする。
+[ListBullet] コンパイル可能な状態を維持する。
+[Heading2] 19.4 DXライブラリ
+描画、入力、画像読み込み、音声再生などはDXライブラリを使用する。独自のWindows APIによる描画システムを作らないこと。DXライブラリの関数は公式の仕様に従って使用する。
+[Heading2] 19.5 変更管理
+既存コードを変更する際は、変更対象と変更理由を明確にする。正常に動作している機能を壊さないこと。修正後は関連機能の回帰テストを実施する。
+[Heading2] 19.6 進捗管理
+| ファイル | 記載内容 |
+| PROJECT_STATUS.md | 現在のPhaseと完了状況 |
+| IMPLEMENTATION_LOG.md | 実装内容と変更ファイル |
+| KNOWN_ISSUES.md | 既知の不具合と未解決事項 |
+[Heading2] 19.7 完了報告
+[ListBullet] 実装した機能
+[ListBullet] 作成・変更したファイル
+[ListBullet] ビルド結果
+[ListBullet] テスト結果
+[ListBullet] 残っている問題
+[ListBullet] 次のPhaseで実施する内容
+未実装の機能を実装済みとして報告しないこと。
+[Heading1] 20. 将来の拡張案
+以下は初期完成版には含めず、完成後の追加要素として扱う。
+[ListBullet] 複数の勢力・陣営
+[ListBullet] 陣営ごとの固有能力
+[ListBullet] キャンペーンモード
+[ListBullet] ステージごとの特殊ルール
+[ListBullet] 盤面サイズ変更（10×10、12×12）
+[ListBullet] ランダムマップ生成
+[ListBullet] 複数種類の特殊石
+[ListBullet] 施設のアップグレード
+[ListBullet] 技術研究ツリー
+[ListBullet] オンライン対戦
+[ListBullet] リプレイ機能
+[ListBullet] ランキング
+[ListBullet] カスタムルール
+拡張性を考慮して設計するが、初期開発でこれらを先行実装しないこと。
+[Heading1] 21. 最重要事項
+本作で最も重要なのは、オセロの面白さを損なわずにストラテジー要素を成立させることである。特殊能力や施設が強すぎると、オセロの基本的な駆け引きが成立しなくなる。
+[ListBullet] オセロの合法手判定は正確に実装する。
+[ListBullet] 通常オセロとストラテジーモードの処理を明確に分離する。
+[ListBullet] 特殊能力の効果とコストを適切に調整する。
+[ListBullet] 施設の防御効果によってゲームが膠着しないようにする。
+[ListBullet] 資源を確保することと石の数を増やすことの両方に意味を持たせる。
+[ListBullet] AIは資源や施設を考慮した行動を選択できるようにする。
+[ListBullet] 仕様書にない機能を勝手に追加せず、必要な場合は事前に提案する。
+最終目標：オセロのルールを理解していれば誰でも始められる一方、資源管理・施設建設・特殊能力・盤面支配によって、何度でも異なる戦略を楽しめるゲームを完成させる。
+[Heading1] 付録A. Claude Codeへの初回指示
+以下の指示文をClaude Codeにコピーして使用する。
+[CodeBlock] あなたはC++およびDXライブラリを使用したゲーム開発の専門家です。
+[CodeBlock] このプロジェクトでは、REIGN OF DISCSの仕様書に従い、オセロとターン制ストラテジーを融合したゲームを開発します。
+[CodeBlock] まず、プロジェクト内の仕様書をすべて確認してください。
+[CodeBlock] 現時点では、ゲームの実装を開始しないでください。
+[CodeBlock] 最初に以下を実施してください。
+[CodeBlock] 1. 仕様書の内容をすべて把握する。
+[CodeBlock] 2. ゲームシステムと技術仕様を整理する。
+[CodeBlock] 3. 実装上の矛盾や不足している仕様を洗い出す。
+[CodeBlock] 4. クラス構成と依存関係を整理する。
+[CodeBlock] 5. Visual StudioとDXライブラリの開発環境を確認する。
+[CodeBlock] 6. Phaseごとの実装計画を作成する。
+[CodeBlock] 7. 各Phaseの完了条件とテスト方法を整理する。
+[CodeBlock] 特に、オセロの基本ロジックとストラテジーシステムが適切に分離されているかを確認してください。
+[CodeBlock] 施設や特殊能力によって通常のオセロルールが変更される部分については、通常オセロモードに影響が出ない設計にしてください。
+[CodeBlock] 確認が完了したら、以下を報告してください。
+[CodeBlock] - 仕様書の理解内容
+[CodeBlock] - システム構成
+[CodeBlock] - クラス設計
+[CodeBlock] - 実装順序
+[CodeBlock] - 技術的な問題点
+[CodeBlock] - 不足している仕様
+[CodeBlock] - 最初に実装すべきPhase
+[CodeBlock] 私の確認を得るまでは、実装を開始しないでください。
+[CodeBlock] 開発ではVisual Studio、C++、DXライブラリを使用してください。
+[CodeBlock] 以降は仕様書を基準としてPhaseごとに開発し、各Phaseのビルドとテストを完了してから次へ進んでください。
+[Heading1] 付録B. 追加検討事項
+初期仕様の完成後、ゲーム性をさらに発展させる場合に検討する。
+[Heading2] B.1 陣営・属性システム
+火・水・風・土などの陣営を用意し、それぞれ異なる特殊能力や戦略を持たせる。対戦ごとに異なる戦術が生まれる。
+[Heading2] B.2 技術研究ツリー
+資源を使って能力を強化する。防御型、資源型、攻撃型など、プレイヤーごとに異なる戦略を作れる。
+[Heading2] B.3 マップごとの勝利条件
+石の数だけでなく、重要拠点の制圧や一定ターンの防衛など、ステージごとに異なる勝利条件を用意する。
+[Heading2] B.4 開発時に決定する推奨事項
+| 項目 | 推奨初期方針 | 選択肢 |
+| ゲーム性 | 中間型 | オセロ寄り / 中間型 / ストラテジー寄り |
+| 盤面 | 8×8固定 | 固定 / サイズ選択 / 自動生成 |
+| 世界観 | ファンタジー・中世戦争風 | ファンタジー / SF / シンプルボードゲーム |
+推奨初期方針は、オセロの盤面戦略を維持しながら資源・施設・能力による戦略性を追加し、まず8×8盤面で完成させることである。
+[Heading1] 仕様確定時の注意事項
+本書は初期開発を開始するための仕様案であり、実装着手前に以下のルールを最終確定すること。
+[ListBullet] 「石の反転」と「占領状態」の関係：占領状態を石の所有者と常に同期させるのか、独立した概念として扱うのか。
+[ListBullet] 施設を建設したマスの石が反転した場合、施設も同時に所有者変更するのか。
+[ListBullet] 砦の「最大4方向の隣接マス」の具体的な選び方と、複数砦の防御範囲が重複した場合の扱い。
+[ListBullet] 防御状態の石を挟むオセロ手の合法性：防御石を挟み列の途中に含められるか、挟めないか。
+[ListBullet] 特殊能力「戦術的配置」で配置した石が反転判定を行うか、配置後に通常の反転処理を行うか。
+[ListBullet] 資源獲得タイミング：自分のターン開始時のみか、各ラウンド開始時か。
+[ListBullet] 建設・能力使用・石配置の順序と、パス時に建設や能力を使えるか。
+上記はゲームバランスと実装ロジックに直結するため、Claude Codeに勝手に判断させず、設計レビュー時に提案を受けて決定すること。

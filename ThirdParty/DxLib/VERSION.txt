@@ -1,0 +1,10 @@
+DX Library for Visual C++ Ver3.25a
+Source: https://dxlib.xsrv.jp/DxLib/DxLib_VC3_25a.zip
+Downloaded: 2026-11-10
+
+DX Library Copyright (C) 2001-2025 Takumi Yamada.
+
+This folder holds the headers and only the x64 static libraries this project links
+(*_vs2015_x64_MT.lib / *_vs2015_x64_MTd.lib, auto-linked by Visual Studio 2022).
+License and the copyright notices of the bundled libraries (libjpeg, libpng, zlib, Ogg Vorbis, Opus, Bullet, etc.):
+see DxLib.txt in this folder (Shift-JIS). Full package: https://dxlib.xsrv.jp/

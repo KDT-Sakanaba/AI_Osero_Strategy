@@ -1,0 +1,14 @@
+# Build output
+x64/
+.vs/
+*.user
+*.aps
+REIGN_OF_DISCS/Log.txt
+
+# Local shortcuts (contain absolute paths of this PC)
+*.lnk
+
+# DX Library: keep headers, license and only the libraries this project links (VS2022, x64, /MT /MTd)
+ThirdParty/DxLib/*.lib
+!ThirdParty/DxLib/*_vs2015_x64_MT.lib
+!ThirdParty/DxLib/*_vs2015_x64_MTd.lib

@@ -1,0 +1,337 @@
+<title>REIGN OF DISCS ルールブック</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a rulebook column (one reading track) with the board as the recurring visual; tables for numbers, boards for positions. */
+:root {
+  --felt: #1f5c3d;          /* board felt */
+  --felt-line: #123a26;
+  --paper: #f3f5f1;         /* page */
+  --surface: #ffffff;
+  --ink: #18201b;
+  --ink-soft: #55625a;
+  --rule: #d5ddd7;
+  --gold: #a67a12;          /* accent: crown / facility badge */
+  --gold-soft: #f4e7c3;
+  --mana: #3a5fae; --ore: #8a6440; --altar: #7d4a8c; --base: #a08a22;
+  --defend: #2a9fd6; --enhance: #d94fb0;
+  --disc-black: #161616; --disc-white: #f0f0ee;
+  --font-display: "Dela Gothic One", "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Consolas", monospace;
+  --step-0: 1rem; --step-1: 1.25rem; --step-2: 1.6rem; --step-3: 2.4rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #111814; --surface: #18221c; --ink: #e6ece7; --ink-soft: #9fb0a5; --rule: #2c3a31;
+    --gold: #e0b44a; --gold-soft: #3a3016; --felt: #1d5a3b; --felt-line: #0b2416;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #111814; --surface: #18221c; --ink: #e6ece7; --ink-soft: #9fb0a5; --rule: #2c3a31;
+  --gold: #e0b44a; --gold-soft: #3a3016; --felt: #1d5a3b; --felt-line: #0b2416;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: var(--step-0); line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 48px 72px; display: grid; gap: 56px; }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; line-height: 1.3; }
+h1 { font-size: clamp(2rem, 6vw, var(--step-3)); letter-spacing: 0.02em; }
+h2 { font-size: var(--step-2); display: flex; align-items: center; gap: 12px; }
+h3 { font-size: var(--step-1); margin: 0; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow { font-size: 0.8rem; letter-spacing: 0.14em; color: var(--gold); font-weight: 700; }
+.lead { color: var(--ink-soft); }
+section { display: grid; gap: 20px; }
+.mode-tag { font-family: var(--font-body); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+  padding: 2px 10px; border-radius: 999px; background: var(--gold-soft); color: var(--gold); }
+
+/* header */
+header { display: grid; gap: 16px; }
+.header-row { display: flex; flex-wrap: wrap; gap: 28px; align-items: center; justify-content: space-between; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--ink-soft); font-size: 0.9rem; }
+.facts b { color: var(--ink); font-weight: 700; }
+
+/* boards */
+.board { display: grid; grid-template-columns: repeat(8, 1fr); width: min(100%, 320px); aspect-ratio: 1;
+  background: var(--felt); border: 3px solid var(--felt-line); gap: 1px; padding: 1px; flex-shrink: 0; }
+.board.small { width: min(100%, 200px); }
+.sq { background: var(--felt); outline: 1px solid var(--felt-line); position: relative; display: grid; place-items: center;
+  font-size: 0.55rem; color: #fff; font-weight: 700; }
+.sq.m { background: var(--mana); } .sq.o { background: var(--ore); } .sq.a { background: var(--altar); } .sq.b { background: var(--base); }
+.disc { width: 74%; aspect-ratio: 1; border-radius: 50%; box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+.disc.k { background: var(--disc-black); border: 1px solid #555; }
+.disc.w { background: var(--disc-white); border: 1px solid #999; }
+.sq .lbl { position: absolute; top: 1px; left: 3px; }
+.dot { width: 22%; aspect-ratio: 1; border-radius: 50%; background: rgba(0,0,0,.45); }
+.figure { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
+.figure figcaption, .caption { font-size: 0.85rem; color: var(--ink-soft); }
+
+/* line diagram */
+.line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.cell { width: 46px; height: 46px; background: var(--felt); border: 2px solid var(--felt-line); display: grid; place-items: center; position: relative; }
+.cell .disc { width: 34px; }
+.cell.def { box-shadow: inset 0 0 0 3px var(--defend); }
+.cell .tag { position: absolute; bottom: -22px; font-size: 0.7rem; color: var(--ink-soft); white-space: nowrap; }
+.arrow { color: var(--ink-soft); font-family: var(--font-mono); }
+.example { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 20px 34px; display: grid; gap: 14px; }
+
+/* steps */
+ol.flow { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; counter-reset: s; }
+ol.flow li { counter-increment: s; display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
+ol.flow li::before { content: counter(s); font-family: var(--font-mono); width: 30px; height: 30px; border-radius: 50%;
+  background: var(--felt); color: #fff; display: grid; place-items: center; font-size: 0.85rem; }
+
+/* tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--ink-soft); font-weight: 700; background: color-mix(in srgb, var(--surface) 85%, var(--felt) 15%); }
+tr:last-child td { border-bottom: 0; }
+td.num, .cost { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+.limit { font-size: 0.78rem; color: var(--gold); font-weight: 700; }
+
+ul.points { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 65ch; }
+.note { border-left: 3px solid var(--gold); padding: 8px 14px; background: var(--gold-soft); border-radius: 0 8px 8px 0; max-width: 65ch; }
+
+.uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.use { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.use .points { gap: 2px; }
+.levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.level { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.level b { font-family: var(--font-mono); letter-spacing: 0.06em; }
+
+kbd { font-family: var(--font-mono); font-size: 0.85em; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; background: var(--surface); }
+footer { color: var(--ink-soft); font-size: 0.85rem; border-top: 1px solid var(--rule); padding-top: 20px; }
+@media (max-width: 480px) { .wrap { padding-block: 28px 48px; gap: 44px; } th, td { padding: 8px 10px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">ルールブック</span>
+    <div class="header-row">
+      <div style="display:grid;gap:14px;max-width:470px">
+        <h1>REIGN OF DISCS</h1>
+        <p class="lead">盤上の覇権。オセロの「挟んで裏返す」に、資源・施設・特殊能力を足した2人用のターン制ストラテジーです。</p>
+        <div class="facts"><span><b>8×8</b> 盤面</span><span><b>黒</b> 先手</span><span><b>2</b> ルール</span><span>2人対戦 / AI 3段階</span></div>
+      </div>
+      <figure class="figure" style="margin:0">
+        <div class="board small" id="startBoard" aria-label="初期配置"></div>
+      </figure>
+    </div>
+  </header>
+
+  <section>
+    <h2>基本ルール <span class="mode-tag">両モード共通</span></h2>
+    <ul class="points">
+      <li>中央4マスに黒2・白2を互い違いに置いて始めます。黒（プレイヤー）が先手です。</li>
+      <li>相手の石を<strong>縦・横・斜め</strong>のどれかで挟めるマスにだけ置けます。挟んだ石はすべて自分の色になります。</li>
+      <li>置けるマスには盤上に小さな点が出ます。置けないマスをクリックしても何も起きません。</li>
+      <li>置ける場所がなければ自動でパスします。</li>
+      <li>64マスが埋まるか、<strong>両者が続けてパス</strong>すると終了。石の多い方の勝ち、同数なら引き分けです。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>特殊マスと資源 <span class="mode-tag">ストラテジー</span></h2>
+    <div class="figure">
+      <div class="board" id="layoutBoard" aria-label="特殊マスの配置"></div>
+      <div style="display:grid;gap:14px;flex:1;min-width:240px">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>マス</th><th>数</th><th>ターン開始時の収入</th></tr></thead>
+            <tbody>
+              <tr><td><span class="swatch" style="background:var(--mana)"></span>マナ鉱脈（マナ）</td><td class="num">4</td><td>マナ +2</td></tr>
+              <tr><td><span class="swatch" style="background:var(--ore)"></span>鉱石鉱脈（鉱石）</td><td class="num">4</td><td>鉱石 +2</td></tr>
+              <tr><td><span class="swatch" style="background:var(--altar)"></span>祭壇マス（祭壇）</td><td class="num">2</td><td>マナ +1・影響力 +1</td></tr>
+              <tr><td><span class="swatch" style="background:var(--base)"></span>中立拠点（拠点）</td><td class="num">4</td><td>影響力 +1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="caption">図は「標準配置」です。モード選択の「マップ」で「ランダム配置」（初期値）を選ぶと、ゲームごとに配置が変わります。ランダムでも盤の中心に対して点対称で、角・中央4マス・その上下左右（初手で置けるマス）には置かれず、特殊マス同士が上下左右で隣り合うこともありません。</p>
+      </div>
+    </div>
+    <ul class="points">
+      <li>収入が入るのは<strong>自分のターンの開始時だけ</strong>。そのとき自分の石があるマスの分を得ます。</li>
+      <li>マスの持ち主は常にその上の石の持ち主です。裏返されれば収入も相手に移ります。</li>
+    </ul>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>資源</th><th>初期値</th><th>上限</th><th>主な使い道</th></tr></thead>
+        <tbody>
+          <tr><td>マナ</td><td class="num">3</td><td class="num">15</td><td>魔力強化・強制反転</td></tr>
+          <tr><td>鉱石</td><td class="num">2</td><td class="num">15</td><td>施設の建設</td></tr>
+          <tr><td>影響力</td><td class="num">0</td><td class="num">10</td><td>破城・戦術的配置</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">上限を超えた分は受け取れずに消えます。</p>
+  </section>
+
+  <section>
+    <h2>資源の使い道</h2>
+    <div class="uses">
+      <div class="use">
+        <h3><span class="swatch" style="background:var(--mana)"></span>マナ</h3>
+        <ul class="points">
+          <li>魔力強化 <span class="cost">マナ3</span></li>
+          <li>強制反転 <span class="cost">マナ5</span></li>
+          <li>魔力炉の建設 <span class="cost">マナ2＋鉱石2</span></li>
+        </ul>
+        <p class="caption">入手: マナ鉱脈 +2、祭壇マス +1、魔力炉 +1</p>
+        <p class="caption">序盤は魔力強化で大事な石を守る。5以上たまったら、角・資源マス・施設のある敵の石を強制反転で奪う。</p>
+      </div>
+      <div class="use">
+        <h3><span class="swatch" style="background:var(--ore)"></span>鉱石</h3>
+        <ul class="points">
+          <li>採掘所 <span class="cost">鉱石3</span></li>
+          <li>魔力炉 <span class="cost">鉱石2＋マナ2</span></li>
+          <li>砦 <span class="cost">鉱石4</span>（1ターン限り）</li>
+          <li>祭壇（施設） <span class="cost">鉱石3＋影響力1</span></li>
+        </ul>
+        <p class="caption">入手: 鉱石鉱脈 +2、採掘所 +1、資源採掘 +2（3回まで）</p>
+        <p class="caption">早めに採掘所や魔力炉を建てて収入を増やす。施設は石ごと奪われるので、角や辺など裏返されにくいマスに建てる。</p>
+      </div>
+      <div class="use">
+        <h3><span class="swatch" style="background:var(--base)"></span>影響力</h3>
+        <ul class="points">
+          <li>破城 <span class="cost">影響力3</span></li>
+          <li>戦術的配置 <span class="cost">影響力5</span></li>
+          <li>祭壇（施設）の建設 <span class="cost">影響力1＋鉱石3</span></li>
+        </ul>
+        <p class="caption">入手: 中立拠点 +1、祭壇マス +1、祭壇（施設） +1</p>
+        <p class="caption">入手できるマスが少ないので、中立拠点と祭壇マスを押さえる。戦術的配置は1回だけなので、角や資源マスを取る場面に残しておく。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>施設の建設 <span class="mode-tag">1ターン1回</span></h2>
+    <p>自分の石があり、まだ施設のないマスに建てます。特殊マスの上にも建てられます。1マスに1つまでです。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>施設</th><th>コスト</th><th>効果</th></tr></thead>
+        <tbody>
+          <tr><td>採掘所</td><td class="cost">鉱石3</td><td>ターン開始時に鉱石 +1</td></tr>
+          <tr><td>魔力炉</td><td class="cost">鉱石2・マナ2</td><td>ターン開始時にマナ +1</td></tr>
+          <tr><td>砦</td><td class="cost">鉱石4</td><td>相手の次の1ターンだけ、上下左右の自分の石を防御状態にする。その後は消える</td></tr>
+          <tr><td>祭壇（施設）</td><td class="cost">鉱石3・影響力1</td><td>ターン開始時に影響力 +1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">施設のあるマスの石が裏返ると、施設もそのまま相手のものになり、効果も相手に働きます。</p>
+  </section>
+
+  <section>
+    <h2>砦と防御</h2>
+    <ul class="points">
+      <li>砦の<strong>上下左右4マス</strong>にある、砦の持ち主の石が防御状態になります（盤上では青い枠）。砦のマス自身は守られません。</li>
+      <li>防御中の石は<strong>挟まれても裏返りません</strong>。ただし挟む列の途中に含めることはでき、その先の石は普通に裏返ります。</li>
+      <li>裏返る石が1個もない方向は、挟んだことになりません。</li>
+      <li>砦が重なっても守りは強くなりません。</li>
+      <li><strong>守れるのは1ターンだけ：</strong>砦は、建てた側の相手のターンが1回終わると消えます。</li>
+      <li><strong>砦を奪うと追加ターン：</strong>砦のマスの石を通常の反転か強制反転で取ると、取った側は続けてもう1ターン行えます。取った砦は取った側のものになり、そこから相手の1ターン分守って消えます。</li>
+    </ul>
+    <div class="example">
+      <h3>例：白が左端に置いた場合</h3>
+      <div class="line" aria-label="白、黒、防御中の黒、黒、白の並び">
+        <div class="cell"><div class="disc w"></div><span class="tag">置く</span></div><span class="arrow">→</span>
+        <div class="cell"><div class="disc k"></div><span class="tag">裏返る</span></div><span class="arrow">→</span>
+        <div class="cell def"><div class="disc k"></div><span class="tag">防御中・残る</span></div><span class="arrow">→</span>
+        <div class="cell"><div class="disc k"></div><span class="tag">裏返る</span></div><span class="arrow">→</span>
+        <div class="cell"><div class="disc w"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>特殊能力 <span class="mode-tag">1ターン1回</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>能力</th><th>コスト</th><th>効果</th></tr></thead>
+        <tbody>
+          <tr><td>魔力強化</td><td class="cost">マナ3</td><td>自分の石1つを、相手の次のターンが終わるまで裏返らなくする（ピンクの輪）。強制反転の対象にもならない。</td></tr>
+          <tr><td>強制反転</td><td class="cost">マナ5</td><td>敵の石1つを自分の石にする。防御中・強化中の石には使えない。周りの石は連鎖しない。</td></tr>
+          <tr><td>資源採掘<br><span class="limit">1ゲーム3回</span></td><td class="cost">なし</td><td>鉱石 +2。鉱石が上限のときは使えない。</td></tr>
+          <tr><td>破城</td><td class="cost">影響力3</td><td>敵の施設1つを、施設の持ち主のターン2回分だけ無効にする。砦なら防御もなくなる。</td></tr>
+          <tr><td>戦術的配置<br><span class="limit">1ゲーム1回</span></td><td class="cost">影響力5</td><td>自分の石の隣（8方向）の空きマスに石を1つ追加で置く。挟んでも裏返さない。このあと通常の配置もできる。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">資源や条件が足りないときは発動せず、資源も減りません。</p>
+  </section>
+
+  <section>
+    <h2>1ターンの流れ <span class="mode-tag">ストラテジー</span></h2>
+    <ol class="flow">
+      <li><span>ターン開始。占領している資源マスと施設から資源を得る。</span></li>
+      <li><span>能力1回・建設1回を、好きな順で使う（どちらも使わなくてよい）。</span></li>
+      <li><span>石を1つ置く。置いた時点でターン終了。</span></li>
+    </ol>
+    <p class="note">置ける場所がなくても、能力か建設が使える間は自動でパスしません。使い終わったら「パス」ボタンで終えます。何もできないときだけ自動でパスします。勝敗は通常オセロと同じく最後の石の数で決まります。</p>
+  </section>
+
+  <section>
+    <h2>AI の強さ</h2>
+    <div class="levels">
+      <div class="level"><b>EASY</b><span>置ける場所からランダムに選ぶ。能力・建設は使わない。</span></div>
+      <div class="level"><b>NORMAL</b><span>角・辺・資源マス・拠点を優先し、相手に角を渡す手を避ける。能力・建設も使う。</span></div>
+      <div class="level"><b>HARD</b><span>4手先まで読み、資源・施設・能力の状況も評価する。1手の思考は2秒以内。</span></div>
+    </div>
+    <p class="caption">AI はいつも白（後手）です。</p>
+  </section>
+
+  <section>
+    <h2>操作</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td>左クリック</td><td>石を置く・ボタンを押す・能力や建設の対象マスを選ぶ</td></tr>
+          <tr><td>右クリック / 「戻る」ボタン</td><td>選択の解除・1段階戻る（「戻る」ボタンは能力・建設の一覧と対象選択中に表示）</td></tr>
+          <tr><td>マウスを乗せる</td><td>マスの情報（種類・持ち主・施設・防御・収入）を表示</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>メニューを閉じる・ポーズ</td></tr>
+          <tr><td><kbd>H</kbd> / ヘルプボタン</td><td>ゲーム内のヘルプ（ルール・盤面の記号・資源と能力・操作）。タイトルの「遊び方」からも開ける</td></tr>
+          <tr><td>能力 / 建設ボタン</td><td>一覧から選び、オレンジの枠のマスをクリックして実行</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>REIGN OF DISCS 初期バージョンのルールです。座標は左上を (0,0)、右下を (7,7) としています。</footer>
+</div>
+
+<script>
+(function () {
+  const start = { "3,3": "w", "4,4": "w", "4,3": "k", "3,4": "k" };
+  const special = {
+    "2,0": "m", "7,2": "m", "0,5": "m", "5,7": "m",
+    "5,0": "o", "0,2": "o", "7,5": "o", "2,7": "o",
+    "5,2": "a", "2,5": "a",
+    "3,1": "b", "6,3": "b", "1,4": "b", "4,6": "b"
+  };
+  const label = { m: "マナ", o: "鉱石", a: "祭壇", b: "拠点" };
+  const hints = { "3,2": 1, "2,3": 1, "5,4": 1, "4,5": 1 };
+  function build(id, withSpecial, withHints) {
+    const el = document.getElementById(id);
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+      const k = x + "," + y, sq = document.createElement("div");
+      sq.className = "sq" + (withSpecial && special[k] ? " " + special[k] : "");
+      if (withSpecial && special[k]) { const l = document.createElement("span"); l.className = "lbl"; l.textContent = label[special[k]]; sq.appendChild(l); }
+      if (start[k]) { const d = document.createElement("div"); d.className = "disc " + start[k]; sq.appendChild(d); }
+      else if (withHints && hints[k]) { const d = document.createElement("div"); d.className = "dot"; sq.appendChild(d); }
+      el.appendChild(sq);
+    }
+  }
+  build("startBoard", false, true);
+  build("layoutBoard", true, false);
+})();
+</script>
